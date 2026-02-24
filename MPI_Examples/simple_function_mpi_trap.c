@@ -36,7 +36,7 @@ double Trap(double left_endpt, double right_endpt, int trap_count,
 double f(double x); 
 
 int main(void) {
-   int my_rank, comm_sz, n = 1024, local_n;   
+   int my_rank, comm_sz, n = 4, local_n;   
    double a = 0.0, b = 100000.0, h, local_a, local_b;
    double local_int = 0.0, total_int = 0.0;
    int source; 
@@ -65,6 +65,9 @@ int main(void) {
       MPI_Send(&local_int, 1, MPI_DOUBLE, 0, 0, 
             MPI_COMM_WORLD); 
    } else {
+      /**
+       * !!!This is the addition of the outcome of the subintervals at the end!!!
+       */
       total_int = local_int;
       for (source = 1; source < comm_sz; source++) {
          MPI_Recv(&local_int, 1, MPI_DOUBLE, source, 0,
