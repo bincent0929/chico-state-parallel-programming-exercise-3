@@ -9,12 +9,12 @@ CFLAGS= -O3 -g -Wall -fopenmp $(INCLUDE_DIRS) $(CDEFS)
 CFLAGS2= -O0 -g -Wall -fopenmp $(INCLUDE_DIRS) $(CDEFS)
 LIBS=
 
-PRODUCT= hello_riemann hello_trapezoidal hello_simpson hello_rk4
+PRODUCT= hello_riemann hello_trapezoidal hello_trapezoidal_constant hello_simpson hello_rk4
 
 HFILES= 
 CFILES= 
 HPPFILES= 
-CPPFILES= hello_riemann.cpp hello_trapezoidal.cpp hello_simpson.cpp hello_rk4.cpp
+CPPFILES= hello_riemann.cpp hello_trapezoidal.cpp hello_trapezoidal_constant.cpp hello_simpson.cpp hello_rk4.cpp
 
 SRCS= ${HFILES} ${CFILES}
 OBJS= ${CFILES:.c=.o}
@@ -30,6 +30,9 @@ hello_riemann:	hello_riemann.cpp
 
 hello_trapezoidal:	hello_trapezoidal.cpp
 	$(CPP) $(CFLAGS2) -o $@ hello_trapezoidal.cpp -lm
+
+hello_trapezoidal_constant:	hello_trapezoidal_constant.cpp
+	$(CPP) $(CFLAGS2) -o $@ hello_trapezoidal_constant.cpp -lm
 
 hello_simpson:	hello_simpson.cpp
 	$(CPP) $(CFLAGS2) -o $@ hello_simpson.cpp -lm

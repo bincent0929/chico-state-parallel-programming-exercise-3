@@ -2,6 +2,23 @@
 title: "exercise-3-report"
 ---
 
-## Quarto
+## 1.
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+### a).
+
+For testing the Riemann sum sequentially, I compiled and ran `hello_riemann.cpp` in integrating a constant function $f(x) = 10.0$ over the interval $0$ to $10.0$ using a step size of $1000000$ at a precision of $15$.
+
+This was the result:
+```bash
+$ ./hello_riemann 
+Will run with default: thread_count=1
+The integral of f(x) from 0.0 to 10 with 1000000 steps is 100
+```
+
+For testing the Trapezoidal sum sequentially, I compiled and ran `hello_trapezoidal_constant.cpp`. I used the same values as above with the Riemann sum, and this, as you may expect, was the output:
+
+```bash
+$ ./hello_trapezoidal_constant 
+Will run with default: thread_count=1
+The integral of f(x) from 0.0 to 10 with 1000000 steps is 100
+```

@@ -2,3 +2,8 @@
 
 /.quarto/
 **/*.quarto_ipynb
+
+hello_riemann
+hello_simpson
+hello_trapezoidal
+hello_rk4
