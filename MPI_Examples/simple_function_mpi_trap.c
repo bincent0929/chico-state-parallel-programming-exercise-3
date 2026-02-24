@@ -27,7 +27,6 @@
 
 /* We'll be using MPI routines, definitions, etc. */
 #include <mpi.h>
-#include <cmath>
 
 /* Calculate local integral  */
 double Trap(double left_endpt, double right_endpt, int trap_count, 
@@ -38,7 +37,7 @@ double f(double x);
 
 int main(void) {
    int my_rank, comm_sz, n = 1024, local_n;   
-   double a = 0.0, b = 3.0, h, local_a, local_b;
+   double a = 0.0, b = 100000.0, h, local_a, local_b;
    double local_int = 0.0, total_int = 0.0;
    int source; 
 
@@ -125,5 +124,5 @@ double Trap(
  * Input args:  x
  */
 double f(double x) {
-   return x*x;
+   return 10;
 } /* f */
