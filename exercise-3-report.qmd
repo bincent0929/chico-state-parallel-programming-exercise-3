@@ -45,7 +45,7 @@ Check out `MPI_Examples/simple_function_mpi_trap.c` and see my code.
 
 The output for it is:
 ```bash
-$ ./simple_function_mpi_trap 
+$ mpiexec -n 1 ./simple_function_mpi_trap
 With n = 4 trapezoids, our estimate
 of the integral from 0.000000 to 100000.000000 = 1.000000000000000e+06
 ```
