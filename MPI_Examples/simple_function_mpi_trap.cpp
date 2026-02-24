@@ -27,6 +27,7 @@
 
 /* We'll be using MPI routines, definitions, etc. */
 #include <mpi.h>
+#include <cmath>
 
 /* Calculate local integral  */
 double Trap(double left_endpt, double right_endpt, int trap_count, 
