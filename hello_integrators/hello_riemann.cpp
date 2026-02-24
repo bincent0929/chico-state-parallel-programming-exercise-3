@@ -5,8 +5,8 @@
 #include <iostream>
 #include <cmath>
 
-//#define RANGE (M_PI)
-#define RANGE (10.0)
+#define RANGE (M_PI)
+//#define RANGE (10.0)
 #define STEPS (1000000)
 
 using namespace std;
@@ -89,6 +89,6 @@ int main(int argc, char* argv[])
 
 double function_to_integrate(double x)
 {
-    return 10.0;
-    //return (sin(x));
+    //return 10.0;
+    return (sin(x));
 }

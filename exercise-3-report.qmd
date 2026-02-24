@@ -6,7 +6,7 @@ title: "exercise-3-report"
 
 ### a).
 
-For testing the Riemann sum sequentially, I compiled and ran `hello_riemann.cpp` in integrating a constant function $f(x) = 10.0$ over the interval $0$ to $10.0$ using a step size of $1000000$ at a precision of $15$.
+For testing the Riemann sum sequentially (using the left sum), I compiled and ran `hello_riemann.cpp` in integrating a constant function $f(x) = 10.0$ over the interval $0$ to $10.0$ using a step size of $1000000$ at a precision of $15$.
 
 This was the result:
 ```bash
@@ -22,3 +22,20 @@ $ ./hello_trapezoidal_constant
 Will run with default: thread_count=1
 The integral of f(x) from 0.0 to 10 with 1000000 steps is 100
 ```
+
+### b).
+
+Here's the result of $f(x)=sin(x)$ using the trapezoidal method:
+```bash
+$ ./hello_trapezoidal 
+Will run with default: thread_count=1
+The integral of f(x) from 0.0 to 3.14159265358979 with 1000000 steps is 1.99999999999841
+```
+
+And here's for the Riemann sum (using the left):
+```bash
+$ ./hello_riemann 
+Will run with default: thread_count=1
+The integral of f(x) from 0.0 to 3.14159265358979 with 1000000 steps is 1.99999999999841
+```
+
