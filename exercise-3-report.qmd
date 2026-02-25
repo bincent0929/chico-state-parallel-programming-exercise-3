@@ -49,3 +49,7 @@ $ mpiexec -n 1 ./simple_function_mpi_trap
 With n = 4 trapezoids, our estimate
 of the integral from 0.000000 to 100000.000000 = 1.000000000000000e+06
 ```
+
+## 2.
+
+Ok, so right now I'm butting my head up against the specification of the document.

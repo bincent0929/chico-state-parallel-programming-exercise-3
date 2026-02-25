@@ -31,7 +31,7 @@
 /* We'll be using MPI routines, definitions, etc. */
 #include <mpi.h>
 
-#define STEP_SIZE 0.10
+#define STEP_SIZE 0.010
 
 /* Build a derived datatype for distributing the input data */
 void Build_mpi_type(double* a_p, double* b_p, MPI_Datatype* input_mpi_t_p);
@@ -65,6 +65,9 @@ int main(void) {
    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
    Get_input(my_rank, comm_sz, &a, &b);
+
+   // takes takes the b and a values, assuming they're seconds
+   // and scales it into another unit values (in this case s -> ms)
    n = (int)round((b - a) / STEP_SIZE);
 
    h = (b-a)/n;          /* h is the same for all processes */
