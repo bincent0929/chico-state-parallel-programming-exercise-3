@@ -43,6 +43,7 @@ void Get_input(int my_rank, int comm_sz, double* a_p, double* b_p,
 double Trap(double left_endpt, double right_endpt, int trap_count, 
    double base_len);    
 
+int thread_count = 1;
 /* calculate local integral using left riemann method */
 double left_riemann_sum(double a, double b, int n);
 
@@ -109,7 +110,7 @@ double left_riemann_sum(double a, double b, int n)
     for (int idx = 0; idx < n; idx++) 
     {
         double x = a + idx * h;
-        double fx = function_to_integrate(x);
+        double fx = funct_to_integrate(x);
 
         // Add the value of the function at the left endpoint of each subinterval.
         sum += fx;
@@ -209,8 +210,8 @@ double Trap(
    return estimate;
 } /*  Trap  */
 
-//#include "ex4accel.h"
-#include "ex4vel.h"
+#include "ex4accel.h"
+//#include "ex4vel.h"
 #include <stdlib.h>
 
 // table look-up for function profile given and velocity profile determined
