@@ -31,13 +31,13 @@
 /* We'll be using MPI routines, definitions, etc. */
 #include <mpi.h>
 
+#define STEP_SIZE 0.10
+
 /* Build a derived datatype for distributing the input data */
-void Build_mpi_type(double* a_p, double* b_p, int* n_p,
-      MPI_Datatype* input_mpi_t_p);
+void Build_mpi_type(double* a_p, double* b_p, MPI_Datatype* input_mpi_t_p);
 
 /* Get the input values */
-void Get_input(int my_rank, int comm_sz, double* a_p, double* b_p,
-      int* n_p);
+void Get_input(int my_rank, int comm_sz, double* a_p, double* b_p);
 
 /* Calculate local integral using Trapezoidal method  */
 double Trap(double left_endpt, double right_endpt, int trap_count, 
@@ -45,14 +45,14 @@ double Trap(double left_endpt, double right_endpt, int trap_count,
 
 int thread_count = 1;
 /* calculate local integral using left riemann method */
-double left_riemann_sum(double a, double b, int n);
+double left_riemann_sum(double a, double b, int n, double h);
 
 /* Function we're integrating */
 double funct_to_integrate(double x); 
 
 int main(void) {
    int my_rank, comm_sz, n, local_n;   
-   double a, b, local_a, local_b;
+   double a, b, h, local_a, local_b;
    double local_int, total_int;
 
    /* Let the system do what it needs to start up MPI */
@@ -64,16 +64,18 @@ int main(void) {
    /* Find out how many processes are being used */
    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-   Get_input(my_rank, comm_sz, &a, &b, &n);
+   Get_input(my_rank, comm_sz, &a, &b);
+   n = (int)round((b - a) / STEP_SIZE);
 
-   local_n = n/comm_sz;  /* So is the number of rectangles  */
+   h = (b-a)/n;          /* h is the same for all processes */
+   local_n = n/comm_sz;  /* This is the number of rectangles  */
 
    /* Length of each process' interval of
     * integration = local_n*h.  So my interval
     * starts at: */
-   local_a = a + my_rank*local_n;
-   local_b = local_a + local_n;
-   local_int = left_riemann_sum(local_a, local_b, local_n);
+   local_a = a + my_rank*local_n*h;
+   local_b = local_a + local_n*h;
+   local_int = left_riemann_sum(local_a, local_b, local_n, h);
 
    /* Add up the integrals calculated by each process */
    MPI_Reduce(&local_int, &total_int, 1, MPI_DOUBLE, MPI_SUM, 0,
@@ -101,10 +103,9 @@ int main(void) {
 //                                                                            //
 // @return          The approximate value of the definite integral.           //
 ////////////////////////////////////////////////////////////////////////////////
-double left_riemann_sum(double a, double b, int n) 
+double left_riemann_sum(double a, double b, int n, double h) 
 {
-    double h = (b - a) / n;
-    double sum = 0.0;
+   double sum = 0.0;
 
 #pragma omp parallel for num_threads(thread_count) reduction(+:sum)
     for (int idx = 0; idx < n; idx++) 
@@ -130,21 +131,18 @@ double left_riemann_sum(double a, double b, int n)
  */
 void Build_mpi_type(
       double*        a_p            /* in  */, 
-      double*        b_p            /* in  */, 
-      int*           n_p            /* in  */,
+      double*        b_p            /* in  */,
       MPI_Datatype*  input_mpi_t_p  /* out */) {
 
    int array_of_blocklengths[3] = {1, 1, 1};
    MPI_Datatype array_of_types[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_INT};
-   MPI_Aint a_addr, b_addr, n_addr;
+   MPI_Aint a_addr, b_addr;
    MPI_Aint array_of_displacements[3] = {0};
 
    MPI_Get_address(a_p, &a_addr);
    MPI_Get_address(b_p, &b_addr);
-   MPI_Get_address(n_p, &n_addr);
    array_of_displacements[1] = b_addr-a_addr; 
-   array_of_displacements[2] = n_addr-a_addr; 
-   MPI_Type_create_struct(3, array_of_blocklengths, 
+   MPI_Type_create_struct(2, array_of_blocklengths, 
          array_of_displacements, array_of_types,
          input_mpi_t_p);
    MPI_Type_commit(input_mpi_t_p);
@@ -164,16 +162,15 @@ void Get_input(
       int      my_rank  /* in  */, 
       int      comm_sz  /* in  */, 
       double*  a_p      /* out */, 
-      double*  b_p      /* out */,
-      int*     n_p      /* out */) {
+      double*  b_p      /* out */) {
    MPI_Datatype input_mpi_t;
    int rc=0;
 
-   Build_mpi_type(a_p, b_p, n_p, &input_mpi_t);
+   Build_mpi_type(a_p, b_p, &input_mpi_t);
 
    if (my_rank == 0) {
-      printf("Enter a, b, and n\n");
-      rc=scanf("%lf %lf %d", a_p, b_p, n_p); if(rc < 0) perror("Get_input");
+      printf("Enter a, b\n");
+      rc=scanf("%lf %lf", a_p, b_p); if(rc < 0) perror("Get_input");
    } 
    MPI_Bcast(a_p, 1, input_mpi_t, 0, MPI_COMM_WORLD);
 
@@ -248,8 +245,8 @@ double table_interp(double time)
  */
 double funct_to_integrate(double x /* in */) {
    //return x*x;
-   //return sin(x);
+   return sin(x);
 
    // replace this with linear interpolation of any function such as acceleration or velocity from a model
-   return table_interp(x);
+   //return table_interp(x);
 } /* f */
