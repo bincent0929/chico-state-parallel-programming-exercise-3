@@ -28,3 +28,4 @@ MPI_Examples/testex4
 MPI_Examples/trap
 MPI_Examples/vector_add
 MPI_Examples/train_problem_solutions
+hello_integrators/hello_trapezoidal_constant

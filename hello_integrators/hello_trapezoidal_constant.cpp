@@ -49,6 +49,7 @@ int main(int argc, char* argv[])
 
     const double result = trapezoidal_rule(a, b, n);
 
+    cout << fixed;
     cout.precision(15);
     cout << "The integral of f(x) from 0.0 to " << b << " with " << n << " steps is " << result << endl;
 
