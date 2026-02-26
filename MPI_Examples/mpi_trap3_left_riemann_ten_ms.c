@@ -8,8 +8,8 @@
  * Output:   Estimate of the integral from a to b of f(x)
  *           using the trapezoidal rule and n trapezoids.
  *
- * Compile:  mpicc -g -Wall -o mpi_trap2 mpi_trap2.c
- * Run:      mpiexec -n <number of processes> ./mpi_trap2
+ * Compile:  Run the make
+ * Run:      mpiexec -n <number of processes> ./mpi_trap3_left_riemann_ten_ms
  *
  * Algorithm:
  *    1.  Each process calculates "its" interval of
@@ -42,7 +42,8 @@ float LeftRiemann(float left_endpt, float right_endpt, int rect_count,
    float base_len);    
 
 /* Function we're integrating */
-double ex3_accel(double time);
+double ex3_accel_double(double time);
+float ex3_accel_float(float time);
 double ex3_vel(double time);
 double ex3_pos(double time);
 double funct_to_integrate(double x); 
@@ -203,14 +204,15 @@ float LeftRiemann(
 double funct_to_integrate(double x) 
 {
     //return sin(x);
-    return(ex3_accel(x));
+    return(ex3_accel_float(x));
+    //return(ex3_accel_double(x));
     //return(ex3_vel(x));
     //return(ex3_pos(x));
     //return 10.0;
 }
 
 
-double ex3_accel(double time)
+double ex3_accel_double(double time)
 {
     // computation of time scale for 1800 seconds
     static double tscale=1800.0/(2.0*M_PI);
@@ -221,7 +223,7 @@ double ex3_accel(double time)
     return (sin(time/tscale)*ascale);
 }
 
-float ex3_accel(float time)
+float ex3_accel_float(float time)
 {
     // computation of time scale for 1800 seconds
     static float tscale=1800.0/(2.0*M_PI);
