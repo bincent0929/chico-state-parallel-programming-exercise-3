@@ -133,8 +133,11 @@ int main(void) {
    #ifdef PART2
       printf("After LeftRiemann: my_rank=%d, integrated area = %15.7lf, step_size %lf, number quadratures=%d\n", 
             my_rank, local_int_area, step_size, local_n);
-   #elif defined(PART3) || defined(PART4)
-      printf("After LeftRiemann: my_rank=%d, integrated area = %20.15lf, step_size %lf, number quadratures=%d\n", 
+   #elif defined(PART3)
+      printf("After MidpointRiemann: my_rank=%d, integrated area = %20.15lf, step_size %lf, number quadratures=%d\n", 
+         my_rank, local_int_area, step_size, local_n);
+   #elif defined(PART4)
+      printf("After Trap: my_rank=%d, integrated area = %20.15lf, step_size %lf, number quadratures=%d\n", 
          my_rank, local_int_area, step_size, local_n);
    #endif
 
