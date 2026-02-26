@@ -35,7 +35,7 @@
  * (HALF_TIME is used to check whether the derivation of velocity
  *  from acceleration actually produces the correct value by getting the peak value).
  */
-#define PART3
+#define PART4
 //#define HALF_TIME
 #define DISPLACEMENT
 
@@ -95,8 +95,14 @@ int main(void) {
    #endif
    
    //Get_input(my_rank, comm_sz, &a, &b, &n);
-   MPI_Bcast(&a, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-   MPI_Bcast(&b, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+   
+   #ifdef PART2
+      MPI_Bcast(&a, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);
+      MPI_Bcast(&b, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);
+   #elif defined(PART3) || defined(PART4)
+      MPI_Bcast(&a, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+      MPI_Bcast(&b, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+   #endif
    //MPI_Bcast(n_p, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
    // step size in seconds (10 ms)
@@ -123,19 +129,36 @@ int main(void) {
    #elif defined(PART4)
       local_int_area = Trap(local_a, local_b, local_n, step_size);
    #endif
-
-   printf("After LeftRiemann: my_rank=%d, integrated area = %15.7lf, step_size %lf, number quadratures=%d\n", 
-           my_rank, local_int_area, step_size, local_n);
+   
+   #ifdef PART2
+      printf("After LeftRiemann: my_rank=%d, integrated area = %15.7lf, step_size %lf, number quadratures=%d\n", 
+            my_rank, local_int_area, step_size, local_n);
+   #elif defined(PART3) || defined(PART4)
+      printf("After LeftRiemann: my_rank=%d, integrated area = %20.15lf, step_size %lf, number quadratures=%d\n", 
+         my_rank, local_int_area, step_size, local_n);
+   #endif
 
    /* Add up the integrals calculated by each process */
-   MPI_Reduce(&local_int_area, &total_int_area, 1, MPI_DOUBLE, MPI_SUM, 0,
+   #ifdef PART2
+      MPI_Reduce(&local_int_area, &total_int_area, 1, MPI_FLOAT, MPI_SUM, 0,
          MPI_COMM_WORLD);
+   #elif defined(PART3) || defined(PART4)
+      MPI_Reduce(&local_int_area, &total_int_area, 1, MPI_DOUBLE, MPI_SUM, 0,
+         MPI_COMM_WORLD);
+   #endif
+   
 
    /* Print the result */
    if (my_rank == 0) {
-      printf("After Reduce: with n = %d quadratures, our estimate\n", n);
-      printf("of the integral from %lf to %lf = %15.7lf\n",
+      #ifdef PART2
+         printf("After Reduce: with n = %d quadratures, our estimate\n", n);
+         printf("of the integral from %lf to %lf = %15.7lf\n",
           a, b, total_int_area);
+      #elif defined(PART3) || defined(PART4)
+         printf("After Reduce: with n = %d quadratures, our estimate\n", n);
+         printf("of the integral from %lf to %lf = %20.15lf\n",
+            a, b, total_int_area);
+      #endif
    }
 
    /* Shut down MPI */
@@ -143,29 +166,6 @@ int main(void) {
 
    return 0;
 } /*  main  */
-
-/*------------------------------------------------------------------
- * Function:     Get_input
- * Purpose:      Get the user input:  the left and right endpoints
- *               and the number of quadratures
- * Input args:   my_rank:  process rank in MPI_COMM_WORLD
- *               comm_sz:  number of processes in MPI_COMM_WORLD
- * Output args:  a_p:  pointer to left endpoint               
- *               b_p:  pointer to right endpoint               
- *               n_p:  pointer to number of quadratures
- */
-void Get_input(int my_rank, int comm_sz, double* a_p, double* b_p,
-      int* n_p) {
-   int rc=0;
-
-   if (my_rank == 0) {
-      printf("Enter a, b, and n\n");
-      rc=scanf("%lf %lf %d", a_p, b_p, n_p); if(rc < 0) perror("Get_input");
-   } 
-   MPI_Bcast(a_p, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-   MPI_Bcast(b_p, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-   MPI_Bcast(n_p, 1, MPI_INT, 0, MPI_COMM_WORLD);
-}  /* Get_input */
 
 /*------------------------------------------------------------------
  * Function:     Trap

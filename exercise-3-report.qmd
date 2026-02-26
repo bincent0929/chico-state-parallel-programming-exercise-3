@@ -106,15 +106,15 @@ Again, this isn't exactly the 122 km that we are expecting. Which we can again a
 
 The output for the velocity using the midpoint Riemann summation at a 1ms step size and double values results in this:
 ```bash
-$ mpiexec -n 1 ./train_problem_solutions
+mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
-After LeftRiemann: my_rank=0, integrated area =      -0.0000000, step_size 0.001000, number quadratures=1800000
+After LeftRiemann: my_rank=0, integrated area =   -0.000000000717885, step_size 0.001000, number quadratures=1800000
 After Reduce: with n = 1800000 quadratures, our estimate
-of the integral from 0.000000 to 1800.000000 =      -0.0000000
+of the integral from 0.000000 to 1800.000000 =   -0.000000000717885
 ```
 
-As you can see, we do get the `0.0` value that we are expecting. The only weird thing is that there's a minus sign in front of it. I'm not sure what's causing it.
+Well, it looks like we're just a little ways below the zero we're expecting for the stopped train. But it's definitely better from what we got in part 2 using float and the smaller step size.
 
 I also wanted to do a half-time check to get the peak value to make sure it's correct.
 
@@ -123,12 +123,12 @@ So the right endpoint is 900:
 $ mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=900.00000000000000, number of total steps=900000
 my_rank=0, start a=0.000000, end b=900.000000, number of quadratures = 900000, step_size=0.001000
-After LeftRiemann: my_rank=0, integrated area =     135.5555556, step_size 0.001000, number quadratures=900000
+After LeftRiemann: my_rank=0, integrated area =  135.555555558113497, step_size 0.001000, number quadratures=900000
 After Reduce: with n = 900000 quadratures, our estimate
-of the integral from 0.000000 to 900.000000 =     135.5555556
+of the integral from 0.000000 to 900.000000 =  135.555555558113497
 ```
 
-And according to our values in the spreadsheet, this is correct!
+And according to our values in the spreadsheet, this is pretty close to correct!
 
 #### Displacement
 
@@ -137,9 +137,53 @@ Here's the output:
 $ mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
-After LeftRiemann: my_rank=0, integrated area =  122000.0000028, step_size 0.001000, number quadratures=1800000
+After LeftRiemann: my_rank=0, integrated area = 122000.000002825327101, step_size 0.001000, number quadratures=1800000
 After Reduce: with n = 1800000 quadratures, our estimate
-of the integral from 0.000000 to 1800.000000 =  122000.0000028
+of the integral from 0.000000 to 1800.000000 = 122000.000002825327101
 ```
 
 As you can see, we are certainly very close to the 122km that we are expecting. Only very slightly off. Which closer than when using floats with the left riemann sum.
+
+## 4.
+
+### Trapezoidal Method - 1ms Step Size - Double Numerical Values
+
+#### Velocity
+
+```bash
+mpiexec -n 1 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
+my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
+After LeftRiemann: my_rank=0, integrated area =   -0.000000000000007, step_size 0.001000, number quadratures=1800000
+After Reduce: with n = 1800000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =   -0.000000000000007
+```
+
+``` {python}
+midpoint_1ms_double_velocity = -0.000000000717885
+trapezoidal_1ms_double_velocity = -0.000000000000007
+
+proportional_difference_velocity = midpoint_1ms_double_velocity / trapezoidal_1ms_double_velocity
+```
+
+It looks like the trapezoidal method got us `{python} proportional_difference_velocity`x closer to zero than the midpoint method for the velocity!
+
+#### Displacement
+
+```bash
+$ mpiexec -n 1 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
+my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
+After LeftRiemann: my_rank=0, integrated area = 122000.000000003419700, step_size 0.001000, number quadratures=1800000
+After Reduce: with n = 1800000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 = 122000.000000003419700
+```
+
+``` {python}
+midpoint_1ms_double_displacement = 122000.000002825327101
+trapezoidal_1ms_double_displacement = 122000.000000003419700
+
+proportional_difference_displacement = midpoint_1ms_double_displacement / trapezoidal_1ms_double_displacement
+```
+
+It looks like the trapezoidal method got us `{python} proportional_difference_displacement`x closer to zero than the midpoint method for the displacement!
