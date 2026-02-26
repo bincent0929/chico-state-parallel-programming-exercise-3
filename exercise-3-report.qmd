@@ -50,20 +50,20 @@ With n = 4 trapezoids, our estimate
 of the integral from 0.000000 to 100000.000000 = 1.000000000000000e+06
 ```
 
+## 2.
+
 ::: {.callout-caution}
 The rest of my solutions will be available in `train_problems_solutions.c`
 
-Make sure to set the definitions to the desired outputs for the program.
-- For Part 2:
-  - Set to PART2 + VELOCITY || DISPLACEMENT
-- For Part 3:
-  - Set to PART3 + VELOCITY || DISPLACEMENT
-- For Part 4:
-  - Set to PART4 + VELOCITY || DISPLACEMENT
-- (HALF_TIME is used to check whether the derivation of velocity from acceleration actually produces the correct value by getting the peak value).
+- Make sure to set the definitions to the desired outputs for the program:
+    - For Part 2:
+      - Set to PART2 + VELOCITY || DISPLACEMENT
+    - For Part 3:
+      - Set to PART3 + VELOCITY || DISPLACEMENT
+    - For Part 4:
+      - Set to PART4 + VELOCITY || DISPLACEMENT
+    - (HALF_TIME is used to check whether the derivation of velocity from acceleration actually produces the correct value by getting the peak value).
 :::
-
-## 2.
 
 ### Left Riemann - 10ms Step Size - Float Numerical Values
 

@@ -1,8 +1,11 @@
+# quarto files
 .venv/
-
 /.quarto/
 **/*.quarto_ipynb
-
+exercise-3-report_files/
+exercise-3-report.html
+exercise-3-report.pdf
+# compiled executables
 hello_riemann
 hello_simpson
 hello_trapezoidal
@@ -24,6 +27,4 @@ MPI_Examples/simple_function_mpi_trap
 MPI_Examples/testex4
 MPI_Examples/trap
 MPI_Examples/vector_add
-MPI_Examples/mpi_left_riemann_ms
-MPI_Examples/mpi_trap3_left_riemann_ten_ms
 MPI_Examples/train_problem_solutions
