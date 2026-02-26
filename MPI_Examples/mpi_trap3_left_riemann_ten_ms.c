@@ -38,8 +38,8 @@ void Get_input(int my_rank, int comm_sz, double* a_p, double* b_p,
 /* Calculate local integral  */
 double Trap(double left_endpt, double right_endpt, int trap_count, 
    double base_len);    
-double LeftRiemann(double left_endpt, double right_endpt, int rect_count, 
-   double base_len);    
+float LeftRiemann(float left_endpt, float right_endpt, int rect_count, 
+   float base_len);    
 
 /* Function we're integrating */
 double ex3_accel(double time);
@@ -49,8 +49,8 @@ double funct_to_integrate(double x);
 
 int main(void) {
    int my_rank, comm_sz, n, local_n;   
-   double a, b, step_size, local_a, local_b;
-   double local_int_area, total_int_area;
+   float a, b, step_size, local_a, local_b;
+   float local_int_area, total_int_area;
 
    /* Let the system do what it needs to start up MPI */
    MPI_Init(NULL, NULL);
@@ -61,11 +61,21 @@ int main(void) {
    /* Find out how many processes are being used */
    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-   Get_input(my_rank, comm_sz, &a, &b, &n);
+   a = 0.0;
+   b = 1800.0;
+   
+   //Get_input(my_rank, comm_sz, &a, &b, &n);
+   MPI_Bcast(&a, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+   MPI_Bcast(&b, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+   //MPI_Bcast(n_p, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
+   // step size in seconds (10 ms)
+   step_size = .01;
+   // amounts of steps
+   n = (b - a) / step_size;
+   
    if(my_rank == 0) printf("my_rank=%d, a=%15.14lf, b=%15.14lf, number of total steps=%d\n", my_rank, a, b, n);
 
-   step_size = (b-a)/n;  /* step is the same for all processes */
    local_n = n/comm_sz;  /* So is the number of quadratures  */
 
    /* Length of each process' interval of
@@ -80,7 +90,7 @@ int main(void) {
    //local_int_area = Trap(local_a, local_b, local_n, step_size);
    local_int_area = LeftRiemann(local_a, local_b, local_n, step_size);
 
-   printf("After LeftRiemann: my_rank=%d, integrated area = %15.14lf, step_size %lf, number quadratures=%d\n", 
+   printf("After LeftRiemann: my_rank=%d, integrated area = %15.7lf, step_size %lf, number quadratures=%d\n", 
            my_rank, local_int_area, step_size, local_n);
 
    /* Add up the integrals calculated by each process */
@@ -90,7 +100,7 @@ int main(void) {
    /* Print the result */
    if (my_rank == 0) {
       printf("After Reduce: with n = %d quadratures, our estimate\n", n);
-      printf("of the integral from %lf to %lf = %15.14lf\n",
+      printf("of the integral from %lf to %lf = %15.7lf\n",
           a, b, total_int_area);
    }
 
@@ -156,13 +166,13 @@ double Trap(
 } /*  Trap  */
 
 
-double LeftRiemann(
-      double left_endpt, 
-      double right_endpt, 
+float LeftRiemann(
+      float left_endpt, 
+      float right_endpt, 
       int    rect_count, 
-      double base_len) 
+      float base_len) 
 {
-   double left_value, x, area=0.0; 
+   float left_value, x, area=0.0; 
    int i;
 
    // estimate of function on left side to forward integrate
@@ -193,10 +203,10 @@ double LeftRiemann(
 double funct_to_integrate(double x) 
 {
     //return sin(x);
-    //return(ex3_accel(x));
+    return(ex3_accel(x));
     //return(ex3_vel(x));
     //return(ex3_pos(x));
-    return 10.0;
+    //return 10.0;
 }
 
 
@@ -211,6 +221,16 @@ double ex3_accel(double time)
     return (sin(time/tscale)*ascale);
 }
 
+float ex3_accel(float time)
+{
+    // computation of time scale for 1800 seconds
+    static float tscale=1800.0/(2.0*M_PI);
+    // determined such that acceleration will peak to result in translation of 122,000.0 meters
+    //static double ascale=0.2365893166123;
+    static float ascale=0.236589076381454;
+
+    return (sinf(time/tscale)*ascale);
+}
 
 // determined based on known anti-derivative of ex4_accel function
 double ex3_vel(double time)
