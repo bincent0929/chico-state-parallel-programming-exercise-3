@@ -25,6 +25,9 @@
  * IPP:   Section 3.4.2 (pp. 104 and ff.)
  */
 #define _GNU_SOURCE
+#define PART3
+//#define HALF_TIME
+#define DISPLACEMENT
 #include <stdio.h>
 #include <math.h>
 
@@ -39,7 +42,9 @@ void Get_input(int my_rank, int comm_sz, double* a_p, double* b_p,
 double Trap(double left_endpt, double right_endpt, int trap_count, 
    double base_len);    
 float LeftRiemann(float left_endpt, float right_endpt, int rect_count, 
-   float base_len);    
+   float base_len);
+double MidpointRiemann(double left_endpt, double right_endpt, double rect_count, 
+   double base_len);
 
 /* Function we're integrating */
 double ex3_accel_double(double time);
@@ -52,9 +57,19 @@ float funct_to_integrate_float(float x);
 
 int main(void) {
    int my_rank, comm_sz, n, local_n;   
-   float a, b, local_a, local_b;
-   const float step_size = .01;
-   float local_int_area, total_int_area;
+   #ifdef PART2
+      float a, b, local_a, local_b;
+      const float step_size = .01;
+      float local_int_area, total_int_area;
+   #elif defined(PART3)
+      double a, b, local_a, local_b;
+      const double step_size = .001;
+      double local_int_area, total_int_area;
+   #elif defined(PART4)
+      double a, b, local_a, local_b;
+      const double step_size = .001;
+      double local_int_area, total_int_area;
+   #endif
 
    /* Let the system do what it needs to start up MPI */
    MPI_Init(NULL, NULL);
@@ -66,7 +81,11 @@ int main(void) {
    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
    a = 0.0;
-   b = 1800.0;
+   #ifdef HALF_TIME
+      b = 900.0;
+   #else
+      b = 1800.0;
+   #endif
    
    //Get_input(my_rank, comm_sz, &a, &b, &n);
    MPI_Bcast(&a, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -90,8 +109,13 @@ int main(void) {
    printf("my_rank=%d, start a=%lf, end b=%lf, number of quadratures = %d, step_size=%lf\n",
            my_rank, local_a, local_b, local_n, step_size);
 
-   //local_int_area = Trap(local_a, local_b, local_n, step_size);
-   local_int_area = LeftRiemann(local_a, local_b, local_n, step_size);
+   #ifdef PART2
+      local_int_area = LeftRiemann(local_a, local_b, local_n, step_size);
+   #elif defined(PART3)
+      local_int_area = MidpointRiemann(local_a, local_b, local_n, step_size);
+   #elif defined(PART4)
+      local_int_area = Trap(local_a, local_b, local_n, step_size);
+   #endif
 
    printf("After LeftRiemann: my_rank=%d, integrated area = %15.7lf, step_size %lf, number quadratures=%d\n", 
            my_rank, local_int_area, step_size, local_n);
@@ -196,6 +220,31 @@ float LeftRiemann(
 
 } /*  LeftRiemann  */
 
+double MidpointRiemann(
+   double left_endpt, 
+   double right_endpt, 
+   double rect_count, 
+   double base_len
+   ) 
+{
+   double x, midpoint_value, area=0.0;
+   int i;
+
+   x = left_endpt + base_len / 2;
+   midpoint_value = funct_to_integrate_double(x);
+
+   for (i = 1; i <= rect_count; i++) 
+   {
+      // add area of each rectangle to overall area sum
+      area += midpoint_value * base_len;
+
+      // advance x by base length for new values to add to area
+      x += base_len;
+      midpoint_value = funct_to_integrate_double(x);
+   }
+
+   return area;
+}
 
 
 /*------------------------------------------------------------------
@@ -205,12 +254,11 @@ float LeftRiemann(
  */
 double funct_to_integrate_double(double x) 
 {
-    //return sin(x);
-    return(ex3_accel_float(x));
-    //return(ex3_accel_double(x));
-    //return(ex3_vel(x));
-    //return(ex3_pos(x));
-    //return 10.0;
+   #ifdef VELOCITY
+      return(ex3_accel_double(x));
+   #elif defined(DISPLACEMENT)
+      return(ex3_vel_double(x));  
+   #endif
 }
 
 /*------------------------------------------------------------------
@@ -220,12 +268,11 @@ double funct_to_integrate_double(double x)
  */
 float funct_to_integrate_float(float x) 
 {
-    //return sin(x);
-    //return(ex3_accel_float(x));
-    //return(ex3_accel_double(x));
-    return(ex3_vel_float(x));
-    //return(ex3_pos(x));
-    //return 10.0;
+   #ifdef VELOCITY
+      return(ex3_accel_float(x));
+   #elif defined(DISPLACEMENT)
+      return(ex3_vel_float(x));  
+   #endif
 }
 
 
