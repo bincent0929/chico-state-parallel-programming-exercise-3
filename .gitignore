@@ -25,3 +25,4 @@ MPI_Examples/testex4
 MPI_Examples/trap
 MPI_Examples/vector_add
 MPI_Examples/mpi_left_riemann_ms
+MPI_Examples/mpi_trap3_left_riemann_ten_ms

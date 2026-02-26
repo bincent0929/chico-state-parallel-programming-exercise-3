@@ -44,9 +44,11 @@ float LeftRiemann(float left_endpt, float right_endpt, int rect_count,
 /* Function we're integrating */
 double ex3_accel_double(double time);
 float ex3_accel_float(float time);
-double ex3_vel(double time);
+double ex3_vel_double(double time);
+float ex3_vel_float(float time);
 double ex3_pos(double time);
-double funct_to_integrate(double x); 
+double funct_to_integrate_double(double x); 
+float funct_to_integrate_float(float x); 
 
 int main(void) {
    int my_rank, comm_sz, n, local_n;   
@@ -154,12 +156,12 @@ double Trap(
    double estimate, x; 
    int i;
 
-   estimate = (funct_to_integrate(left_endpt) + funct_to_integrate(right_endpt))/2.0;
+   estimate = (funct_to_integrate_double(left_endpt) + funct_to_integrate_double(right_endpt))/2.0;
 
    for (i = 1; i <= trap_count-1; i++) 
    {
       x = left_endpt + i*base_len;
-      estimate += funct_to_integrate(x);
+      estimate += funct_to_integrate_double(x);
    }
    estimate = estimate*base_len;
 
@@ -178,7 +180,7 @@ float LeftRiemann(
 
    // estimate of function on left side to forward integrate
    x = left_endpt;
-   left_value = funct_to_integrate(x);
+   left_value = funct_to_integrate_float(x);
 
    for (i = 1; i <= rect_count; i++) 
    {
@@ -187,7 +189,7 @@ float LeftRiemann(
 
       // advance x by base length for new values to add to area
       x += base_len;
-      left_value = funct_to_integrate(x);
+      left_value = funct_to_integrate_float(x);
    }
 
    return area;
@@ -201,12 +203,27 @@ float LeftRiemann(
  * Purpose:     Compute value of function to be integrated
  * Input args:  x
  */
-double funct_to_integrate(double x) 
+double funct_to_integrate_double(double x) 
 {
     //return sin(x);
     return(ex3_accel_float(x));
     //return(ex3_accel_double(x));
     //return(ex3_vel(x));
+    //return(ex3_pos(x));
+    //return 10.0;
+}
+
+/*------------------------------------------------------------------
+ * Function:    f
+ * Purpose:     Compute value of function to be integrated
+ * Input args:  x
+ */
+float funct_to_integrate_float(float x) 
+{
+    //return sin(x);
+    //return(ex3_accel_float(x));
+    //return(ex3_accel_double(x));
+    return(ex3_vel_float(x));
     //return(ex3_pos(x));
     //return 10.0;
 }
@@ -235,12 +252,23 @@ float ex3_accel_float(float time)
 }
 
 // determined based on known anti-derivative of ex4_accel function
-double ex3_vel(double time)
+double ex3_vel_double(double time)
 {
     // computation of time scale for 1800 seconds
     static double tscale=1800.0/(2.0*M_PI);
     // determined such that velocity will peak to result in translation of 122,000.0 meters
     static double vscale=0.236589076381454*1800.0/(2.0*M_PI);
+
+    return ((-cos(time/tscale)+1)*vscale);
+}
+
+// determined based on known anti-derivative of ex4_accel function
+float ex3_vel_float(float time)
+{
+    // computation of time scale for 1800 seconds
+    static float tscale=1800.0/(2.0*M_PI);
+    // determined such that velocity will peak to result in translation of 122,000.0 meters
+    static float vscale=0.236589076381454*1800.0/(2.0*M_PI);
 
     return ((-cos(time/tscale)+1)*vscale);
 }

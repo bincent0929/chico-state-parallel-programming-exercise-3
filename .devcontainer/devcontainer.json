@@ -28,7 +28,8 @@
 				"ms-vscode.makefile-tools",
 				"ms-python.python",
 				"ms-vscode.cpptools-extension-pack",
-				"ngtystr.ppm-pgm-viewer-for-vscode"
+				"ngtystr.ppm-pgm-viewer-for-vscode",
+				"yzhang.markdown-all-in-one"
 			]
 		}
 	}

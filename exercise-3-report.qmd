@@ -52,4 +52,89 @@ of the integral from 0.000000 to 100000.000000 = 1.000000000000000e+06
 
 ## 2.
 
-Ok, so right now I'm butting my head up against the specification of the document.
+I made `mpi_trap3_left_riemann_ten_ms.c` to perform the calculations.
+
+### a). Final Velocity
+
+In order to get the velocity make sure your `funct_to_integrate_float` looks like this:
+```c
+/*------------------------------------------------------------------
+ * Function:    f
+ * Purpose:     Compute value of function to be integrated
+ * Input args:  x
+ */
+float funct_to_integrate_float(float x) 
+{
+    //return sin(x);
+    return(ex3_accel_float(x));
+    //return(ex3_accel_double(x));
+    //return(ex3_vel(x));
+    //return(ex3_pos(x));
+    //return 10.0;
+}
+```
+
+And that your `LeftRiemann` looks like this:
+```c
+float LeftRiemann(
+      float left_endpt, 
+      float right_endpt, 
+      int    rect_count, 
+      float base_len) 
+{
+   float left_value, x, area=0.0; 
+   int i;
+
+   // estimate of function on left side to forward integrate
+   x = left_endpt;
+   left_value = funct_to_integrate_float(x);
+
+   for (i = 1; i <= rect_count; i++) 
+   {
+      // add area of each rectangle to overall area sum
+      area += left_value * base_len;
+
+      // advance x by base length for new values to add to area
+      x += base_len;
+      left_value = funct_to_integrate_float(x);
+   }
+
+   return area;
+
+} /*  LeftRiemann  */
+```
+
+This ensures that you're integrating the acceleration to get the velocity and that you're using float values.
+
+This was the output for getting the left Riemann derivative for the acceleration:
+```bash
+$ mpiexec -n 1 ./mpi_trap3_left_riemann_ten_ms
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=180000
+my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 180000, step_size=0.010000
+After LeftRiemann: my_rank=0, integrated area =       0.0350172, step_size 0.010000, number quadratures=180000
+After Reduce: with n = 180000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =       0.0350172
+```
+
+As you can see, it's `0.0350172` m/s, and not `0.0` m/s that we're expecting for the stopped train. I'm assuming the float type being used is contributing to that inprecise outcome.
+
+### b). Final Displacement
+
+In order to get the velocity make sure your `funct_to_integrate_float` looks like this:
+```c
+/*------------------------------------------------------------------
+ * Function:    f
+ * Purpose:     Compute value of function to be integrated
+ * Input args:  x
+ */
+float funct_to_integrate_float(float x) 
+{
+    //return sin(x);
+    //return(ex3_accel_float(x));
+    return(ex3_vel(x));
+    //return(ex3_pos(x));
+    //return 10.0;
+}
+```
+
+This ensures that you're integrating the velocity to get the displacement. Additionally, make sure that your `LeftRiemann` looks like the one from part a of this section to ensure you're using float.
