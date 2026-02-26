@@ -71,11 +71,11 @@ int main(void) {
    int my_rank, comm_sz, n, local_n;   
    #ifdef PART2
       float a, b, local_a, local_b;
-      const float step_size = .01;
+      const float step_size = .00001;
       float local_int_area, total_int_area;
    #elif defined(PART3) || defined(PART4)
       double a, b, local_a, local_b;
-      const double step_size = .001;
+      const double step_size = .00001;
       double local_int_area, total_int_area;
    #endif
 
