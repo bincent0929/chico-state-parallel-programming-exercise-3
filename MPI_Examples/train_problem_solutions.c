@@ -37,6 +37,7 @@
  */
 #define PART4
 //#define HALF_TIME
+//#define VELOCITY
 #define DISPLACEMENT
 
 #include <stdio.h>

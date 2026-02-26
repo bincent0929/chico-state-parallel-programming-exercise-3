@@ -52,15 +52,34 @@ Knowing this fact, I just I went ahead and picked the trapezoidal method.
 
 Check out `MPI_Examples/simple_function_mpi_trap.c` and see my code.
 
-The output for it is:
+The output for it is with one process:
 ```bash
-$ mpiexec -n 1 ./simple_function_mpi_trap
-With n = 4 trapezoids, our estimate
+$ time mpiexec -n 1 ./simple_function_mpi_trap
+With n = 100 trapezoids, our estimate
 of the integral from 0.000000 to 100000.000000 = 1.000000000000000e+06
+
+real    0m0.288s
+user    0m0.023s
+sys     0m0.038s
 ```
 
-::: {.callout-warning}
-Ok apparently the MPI program is resulting in some problems.
+The output for it with multiple processes:
+```bash
+$ time mpiexec -n 5 ./simple_function_mpi_trap
+With n = 100 trapezoids, our estimate
+of the integral from 0.000000 to 100000.000000 = 1.000000000000000e+06
+
+real    0m0.296s
+user    0m0.052s
+sys     0m0.080s
+```
+
+I have 8 cores to be able to work on this, but due to the way this is set up, using 5 cores correctly divides the work across the cores to not cause remainder issues which results in incorrect calculations.
+
+::: {.callout-note}
+As you can see from the above, the MPI implementation using multiple processes doesn't really yield a speedup compared to the single process.
+
+This could be relative to the problem. It is similarly lack luster in speed up for all the rest of the programs using MPI in this report.
 :::
 
 ## 2.
@@ -76,6 +95,8 @@ The rest of my solutions will be available in `train_problems_solutions.c`
     - For Part 4:
       - Set to PART4 + VELOCITY || DISPLACEMENT
     - (HALF_TIME is used to check whether the derivation of velocity from acceleration actually produces the correct value by getting the peak value).
+
+Run the program using `time mpiexec -n 1 ./train_problem_solutions` for a single process result and `time mpiexec -n 8 ./train_problem_solutions` (which seems to not have remainder issues in my testing) to get similar multi-process results.
 :::
 
 ### Left Riemann - 10ms Step Size - Float Numerical Values
@@ -84,32 +105,101 @@ The rest of my solutions will be available in `train_problems_solutions.c`
 
 For the velocity in the case where the step size is 10ms, make sure to set your definitions to set to PART2 + VELOCITY.
 
-This was the output that I got:
+This was the output that I got when using one process:
 ```bash
-mpiexec -n 1 ./train_problem_solutions
+$ time mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=180000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 180000, step_size=0.010000
 After LeftRiemann: my_rank=0, integrated area =       0.0350172, step_size 0.010000, number quadratures=180000
 After Reduce: with n = 180000 quadratures, our estimate
 of the integral from 0.000000 to 1800.000000 =       0.0350172
+
+real    0m0.288s
+user    0m0.012s
+sys     0m0.047s
 ```
 
 As you can see, the final velocity is not zero, as we would expect. This is likely to, in large part, to the use of float values in the case of this solution.
+
+This was the output I got when using multiple processes:
+```bash
+$ time mpiexec -n 8 ./train_problem_solutions
+my_rank=6, start a=1350.000000, end b=1575.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=6, integrated area =     -47.9163971, step_size 0.010000, number quadratures=22500
+my_rank=7, start a=1575.000000, end b=1800.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=7, integrated area =     -19.8331127, step_size 0.010000, number quadratures=22500
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=180000
+my_rank=0, start a=0.000000, end b=225.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=0, integrated area =      19.8497849, step_size 0.010000, number quadratures=22500
+my_rank=1, start a=225.000000, end b=450.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=1, integrated area =      47.9279099, step_size 0.010000, number quadratures=22500
+my_rank=2, start a=450.000000, end b=675.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=2, integrated area =      47.9163933, step_size 0.010000, number quadratures=22500
+my_rank=3, start a=675.000000, end b=900.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=3, integrated area =      19.8331032, step_size 0.010000, number quadratures=22500
+my_rank=4, start a=900.000000, end b=1125.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=4, integrated area =     -19.8681431, step_size 0.010000, number quadratures=22500
+my_rank=5, start a=1125.000000, end b=1350.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=5, integrated area =     -47.9307785, step_size 0.010000, number quadratures=22500
+After Reduce: with n = 180000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =      -0.0212383
+
+real    0m0.300s
+user    0m0.082s
+sys     0m0.117s
+```
+
+The outcome is slightly different. Still very close to the 0.0 we're expecting. It is close, in terms of absolute value than using just the single worker. Which is interesting.
 
 #### Displacement
 
 Make sure to set your definitions to PART2 + DISPLACEMENT.
 
+Here it is for one process:
 ```bash
-$ mpiexec -n 1 ./train_problem_solutions
+$ time mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=180000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 180000, step_size=0.010000
 After LeftRiemann: my_rank=0, integrated area =  121884.0312500, step_size 0.010000, number quadratures=180000
 After Reduce: with n = 180000 quadratures, our estimate
 of the integral from 0.000000 to 1800.000000 =  121884.0312500
+
+real    0m0.289s
+user    0m0.033s
+sys     0m0.028s
 ```
 
 Again, this isn't exactly the 122 km that we are expecting. Which we can again attribute, in part, to the use of float values.
+
+Here it is for multiple processes:
+```bash
+$ time mpiexec -n 8 ./train_problem_solutions
+my_rank=4, start a=900.000000, end b=1125.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=4, integrated area =   28977.0058594, step_size 0.010000, number quadratures=22500
+my_rank=5, start a=1125.000000, end b=1350.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=5, integrated area =   20931.7714844, step_size 0.010000, number quadratures=22500
+my_rank=6, start a=1350.000000, end b=1575.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=6, integrated area =    9558.1875000, step_size 0.010000, number quadratures=22500
+my_rank=7, start a=1575.000000, end b=1800.000000, number of quadratures = 22500, step_size=0.010000
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=180000
+my_rank=0, start a=0.000000, end b=225.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=0, integrated area =    1519.8255615, step_size 0.010000, number quadratures=22500
+my_rank=1, start a=225.000000, end b=450.000000, number of quadratures = 22500, step_size=0.010000
+my_rank=2, start a=450.000000, end b=675.000000, number of quadratures = 22500, step_size=0.010000
+my_rank=3, start a=675.000000, end b=900.000000, number of quadratures = 22500, step_size=0.010000
+After LeftRiemann: my_rank=1, integrated area =    9566.1025391, step_size 0.010000, number quadratures=22500
+After LeftRiemann: my_rank=2, integrated area =   20941.8164062, step_size 0.010000, number quadratures=22500
+After LeftRiemann: my_rank=7, integrated area =    1518.7901611, step_size 0.010000, number quadratures=22500
+After LeftRiemann: my_rank=3, integrated area =   28981.4023438, step_size 0.010000, number quadratures=22500
+After Reduce: with n = 180000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =  121994.9062500
+
+real    0m0.302s
+user    0m0.074s
+sys     0m0.122s
+```
+
+Looks like this time, the multiple process result is a little farther off than the single process result.
 
 ## 3.
 
@@ -117,14 +207,18 @@ Again, this isn't exactly the 122 km that we are expecting. Which we can again a
 
 #### Velocity
 
-The output for the velocity using the midpoint Riemann summation at a 1ms step size and double values results in this:
+Here's the output for one process:
 ```bash
-mpiexec -n 1 ./train_problem_solutions
+$ time mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
-After LeftRiemann: my_rank=0, integrated area =   -0.000000000717885, step_size 0.001000, number quadratures=1800000
+After MidpointRiemann: my_rank=0, integrated area =   -0.000000000717885, step_size 0.001000, number quadratures=1800000
 After Reduce: with n = 1800000 quadratures, our estimate
 of the integral from 0.000000 to 1800.000000 =   -0.000000000717885
+
+real    0m0.307s
+user    0m0.051s
+sys     0m0.028s
 ```
 
 Well, it looks like we're just a little ways below the zero we're expecting for the stopped train. But it's definitely better from what we got in part 2 using float and the smaller step size.
@@ -133,29 +227,124 @@ I also wanted to do a half-time check to get the peak value to make sure it's co
 
 So the right endpoint is 900:
 ```bash
-$ mpiexec -n 1 ./train_problem_solutions
+$ time mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=900.00000000000000, number of total steps=900000
 my_rank=0, start a=0.000000, end b=900.000000, number of quadratures = 900000, step_size=0.001000
-After LeftRiemann: my_rank=0, integrated area =  135.555555558113497, step_size 0.001000, number quadratures=900000
+After MidpointRiemann: my_rank=0, integrated area =  135.555555558113497, step_size 0.001000, number quadratures=900000
 After Reduce: with n = 900000 quadratures, our estimate
 of the integral from 0.000000 to 900.000000 =  135.555555558113497
+
+real    0m0.295s
+user    0m0.040s
+sys     0m0.028s
 ```
 
 And according to our values in the spreadsheet, this is pretty close to correct!
 
+And here are those using more processes:
+```bash
+$ time mpiexec -n 8 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
+my_rank=0, start a=0.000000, end b=225.000000, number of quadratures = 225000, step_size=0.001000
+After MidpointRiemann: my_rank=0, integrated area =   19.851651497400937, step_size 0.001000, number quadratures=225000
+my_rank=1, start a=225.000000, end b=450.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=2, start a=450.000000, end b=675.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=3, start a=675.000000, end b=900.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=4, start a=900.000000, end b=1125.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=5, start a=1125.000000, end b=1350.000000, number of quadratures = 225000, step_size=0.001000
+After MidpointRiemann: my_rank=5, integrated area =  -47.926126280319551, step_size 0.001000, number quadratures=225000
+my_rank=6, start a=1350.000000, end b=1575.000000, number of quadratures = 225000, step_size=0.001000
+After MidpointRiemann: my_rank=6, integrated area =  -47.926126280691427, step_size 0.001000, number quadratures=225000
+my_rank=7, start a=1575.000000, end b=1800.000000, number of quadratures = 225000, step_size=0.001000
+After MidpointRiemann: my_rank=7, integrated area =  -19.851651497835523, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=1, integrated area =   47.926126280373055, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=2, integrated area =   47.926126280691442, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=3, integrated area =   19.851651497835540, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=4, integrated area =  -19.851651496945660, step_size 0.001000, number quadratures=225000
+After Reduce: with n = 1800000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =    0.000000000508809
+
+real    0m0.304s
+user    0m0.111s
+sys     0m0.114s
+```
+
+```bash
+$ time mpiexec -n 8 ./train_problem_solutions
+my_rank=1, start a=112.500000, end b=225.000000, number of quadratures = 112500, step_size=0.001000
+my_rank=2, start a=225.000000, end b=337.500000, number of quadratures = 112500, step_size=0.001000
+my_rank=3, start a=337.500000, end b=450.000000, number of quadratures = 112500, step_size=0.001000
+my_rank=4, start a=450.000000, end b=562.500000, number of quadratures = 112500, step_size=0.001000
+my_rank=5, start a=562.500000, end b=675.000000, number of quadratures = 112500, step_size=0.001000
+After MidpointRiemann: my_rank=5, integrated area =   21.988693642429304, step_size 0.001000, number quadratures=112500
+my_rank=6, start a=675.000000, end b=787.500000, number of quadratures = 112500, step_size=0.001000
+my_rank=7, start a=787.500000, end b=900.000000, number of quadratures = 112500, step_size=0.001000
+my_rank=0, a=0.00000000000000, b=900.00000000000000, number of total steps=900000
+my_rank=0, start a=0.000000, end b=112.500000, number of quadratures = 112500, step_size=0.001000
+After MidpointRiemann: my_rank=0, integrated area =    5.159276129794845, step_size 0.001000, number quadratures=112500
+After MidpointRiemann: my_rank=3, integrated area =   25.937432638075762, step_size 0.001000, number quadratures=112500
+After MidpointRiemann: my_rank=1, integrated area =   14.692375367592907, step_size 0.001000, number quadratures=112500
+After MidpointRiemann: my_rank=2, integrated area =   21.988693642330446, step_size 0.001000, number quadratures=112500
+After MidpointRiemann: my_rank=4, integrated area =   25.937432638123873, step_size 0.001000, number quadratures=112500
+After MidpointRiemann: my_rank=7, integrated area =    5.159276129915289, step_size 0.001000, number quadratures=112500
+After MidpointRiemann: my_rank=6, integrated area =   14.692375367679563, step_size 0.001000, number quadratures=112500
+After Reduce: with n = 900000 quadratures, our estimate
+of the integral from 0.000000 to 900.000000 =  135.555555555941993
+
+real    0m0.302s
+user    0m0.089s
+sys     0m0.116s
+```
+
+Which come out to right about the same values as with the single process.
+
 #### Displacement
 
-Here's the output:
+Here's the output from one process:
 ```bash
-$ mpiexec -n 1 ./train_problem_solutions
+$ time mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
-After LeftRiemann: my_rank=0, integrated area = 122000.000002825327101, step_size 0.001000, number quadratures=1800000
+After MidpointRiemann: my_rank=0, integrated area = 122000.000002825327101, step_size 0.001000, number quadratures=1800000
 After Reduce: with n = 1800000 quadratures, our estimate
 of the integral from 0.000000 to 1800.000000 = 122000.000002825327101
+
+real    0m0.306s
+user    0m0.049s
+sys     0m0.028s
 ```
 
 As you can see, we are certainly very close to the 122km that we are expecting. Only very slightly off. Which closer than when using floats with the left riemann sum.
+
+Here's the output from multiple processes:
+```bash
+$ time mpiexec -n 8 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
+my_rank=0, start a=0.000000, end b=225.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=7, start a=1575.000000, end b=1800.000000, number of quadratures = 225000, step_size=0.001000
+After MidpointRiemann: my_rank=7, integrated area = 1520.176178633141262, step_size 0.001000, number quadratures=225000
+my_rank=1, start a=225.000000, end b=450.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=2, start a=450.000000, end b=675.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=3, start a=675.000000, end b=900.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=4, start a=900.000000, end b=1125.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=5, start a=1125.000000, end b=1350.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=6, start a=1350.000000, end b=1575.000000, number of quadratures = 225000, step_size=0.001000
+After MidpointRiemann: my_rank=6, integrated area = 9562.920764302192765, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=0, integrated area = 1520.176178604239112, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=1, integrated area = 9562.920764087259158, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=2, integrated area = 20937.079235697994591, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=3, integrated area = 28979.823821366630000, step_size 0.001000, number quadratures=225000
+After MidpointRiemann: my_rank=4, integrated area = 28979.823821472131385, step_size 0.001000, number quadratures=225000
+After Reduce: with n = 1800000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 = 122000.000000116473529
+After MidpointRiemann: my_rank=5, integrated area = 20937.079235952871386, step_size 0.001000, number quadratures=225000
+
+real    0m0.306s
+user    0m0.117s
+sys     0m0.116s
+```
+
+Even closer to what we're expecting!
 
 ## 4.
 
@@ -163,40 +352,92 @@ As you can see, we are certainly very close to the 122km that we are expecting. 
 
 #### Velocity
 
+Here it is for one process:
 ```bash
-mpiexec -n 1 ./train_problem_solutions
+$ time mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
-After LeftRiemann: my_rank=0, integrated area =   -0.000000000000007, step_size 0.001000, number quadratures=1800000
+After Trap: my_rank=0, integrated area =   -0.000000000000007, step_size 0.001000, number quadratures=1800000
 After Reduce: with n = 1800000 quadratures, our estimate
 of the integral from 0.000000 to 1800.000000 =   -0.000000000000007
+
+real    0m0.304s
+user    0m0.047s
+sys     0m0.029s
 ```
 
-``` {python}
-midpoint_1ms_double_velocity = -0.000000000717885
-trapezoidal_1ms_double_velocity = -0.000000000000007
+And for multiple:
+```bash
+$ time mpiexec -n 8 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
+my_rank=0, start a=0.000000, end b=225.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=2, start a=450.000000, end b=675.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=6, start a=1350.000000, end b=1575.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=1, start a=225.000000, end b=450.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=4, start a=900.000000, end b=1125.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=5, start a=1125.000000, end b=1350.000000, number of quadratures = 225000, step_size=0.001000
+After Trap: my_rank=0, integrated area =   19.851651497335880, step_size 0.001000, number quadratures=225000
+After Trap: my_rank=5, integrated area =  -47.926126280372266, step_size 0.001000, number quadratures=225000
+my_rank=3, start a=675.000000, end b=900.000000, number of quadratures = 225000, step_size=0.001000
+After Trap: my_rank=1, integrated area =   47.926126280372259, step_size 0.001000, number quadratures=225000
+After Trap: my_rank=2, integrated area =   47.926126280373246, step_size 0.001000, number quadratures=225000
+my_rank=7, start a=1575.000000, end b=1800.000000, number of quadratures = 225000, step_size=0.001000
+After Trap: my_rank=6, integrated area =  -47.926126280373268, step_size 0.001000, number quadratures=225000
+After Trap: my_rank=4, integrated area =  -19.851651497335872, step_size 0.001000, number quadratures=225000
+After Trap: my_rank=7, integrated area =  -19.851651497336444, step_size 0.001000, number quadratures=225000
+After Reduce: with n = 1800000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =   -0.000000000000036
+After Trap: my_rank=3, integrated area =   19.851651497336434, step_size 0.001000, number quadratures=225000
 
-proportional_difference_velocity = midpoint_1ms_double_velocity / trapezoidal_1ms_double_velocity
+real    0m0.305s
+user    0m0.112s
+sys     0m0.114s
 ```
 
-It looks like the trapezoidal method got us `{python} proportional_difference_velocity`x closer to zero than the midpoint method for the velocity!
+These come out to being closer in absolute value to 0 than with the midpoint results in part 2.
 
 #### Displacement
 
+Here it is for one process:
 ```bash
-$ mpiexec -n 1 ./train_problem_solutions
+$ time mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
-After LeftRiemann: my_rank=0, integrated area = 122000.000000003419700, step_size 0.001000, number quadratures=1800000
+After Trap: my_rank=0, integrated area = 122000.000000003419700, step_size 0.001000, number quadratures=1800000
 After Reduce: with n = 1800000 quadratures, our estimate
 of the integral from 0.000000 to 1800.000000 = 122000.000000003419700
+
+real    0m0.305s
+user    0m0.048s
+sys     0m0.032s
 ```
 
-``` {python}
-midpoint_1ms_double_displacement = 122000.000002825327101
-trapezoidal_1ms_double_displacement = 122000.000000003419700
+And for multiple:
+```bash
+$ time mpiexec -n 8 ./train_problem_solutions
+my_rank=2, start a=450.000000, end b=675.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=3, start a=675.000000, end b=900.000000, number of quadratures = 225000, step_size=0.001000
+After Trap: my_rank=3, integrated area = 28979.823821381818561, step_size 0.001000, number quadratures=225000
+my_rank=4, start a=900.000000, end b=1125.000000, number of quadratures = 225000, step_size=0.001000
+After Trap: my_rank=4, integrated area = 28979.823821381713060, step_size 0.001000, number quadratures=225000
+my_rank=5, start a=1125.000000, end b=1350.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=6, start a=1350.000000, end b=1575.000000, number of quadratures = 225000, step_size=0.001000
+After Trap: my_rank=6, integrated area = 9562.920764190459522, step_size 0.001000, number quadratures=225000
+my_rank=7, start a=1575.000000, end b=1800.000000, number of quadratures = 225000, step_size=0.001000
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
+my_rank=0, start a=0.000000, end b=225.000000, number of quadratures = 225000, step_size=0.001000
+After Trap: my_rank=0, integrated area = 1520.176178618088670, step_size 0.001000, number quadratures=225000
+my_rank=1, start a=225.000000, end b=450.000000, number of quadratures = 225000, step_size=0.001000
+After Trap: my_rank=2, integrated area = 20937.079235809658712, step_size 0.001000, number quadratures=225000
+After Trap: my_rank=1, integrated area = 9562.920764190490445, step_size 0.001000, number quadratures=225000
+After Trap: my_rank=7, integrated area = 1520.176178618062522, step_size 0.001000, number quadratures=225000
+After Trap: my_rank=5, integrated area = 20937.079235810138925, step_size 0.001000, number quadratures=225000
+After Reduce: with n = 1800000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 = 122000.000000000436557
 
-proportional_difference_displacement = midpoint_1ms_double_displacement / trapezoidal_1ms_double_displacement
+real    0m0.305s
+user    0m0.112s
+sys     0m0.111s
 ```
 
-It looks like the trapezoidal method got us `{python} proportional_difference_displacement`x closer to zero than the midpoint method for the displacement!
+Like for the velocity, both come out to be closer to 122 km than with the midpoint method in part 3.
