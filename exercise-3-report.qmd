@@ -1,5 +1,13 @@
 ---
 title: "exercise-3-report"
+format:
+  pdf:
+    code-overflow: wrap
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+        \DefineVerbatimEnvironment{OutputCode}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
 ---
 
 ::: {.callout-important}
