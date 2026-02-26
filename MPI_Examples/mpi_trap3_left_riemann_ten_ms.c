@@ -52,7 +52,8 @@ float funct_to_integrate_float(float x);
 
 int main(void) {
    int my_rank, comm_sz, n, local_n;   
-   float a, b, step_size, local_a, local_b;
+   float a, b, local_a, local_b;
+   const float step_size = .01;
    float local_int_area, total_int_area;
 
    /* Let the system do what it needs to start up MPI */
@@ -73,7 +74,6 @@ int main(void) {
    //MPI_Bcast(n_p, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
    // step size in seconds (10 ms)
-   step_size = .01;
    // amounts of steps
    n = (b - a) / step_size;
    
