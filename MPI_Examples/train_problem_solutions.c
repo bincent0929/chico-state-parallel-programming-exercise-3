@@ -24,10 +24,21 @@
  *
  * IPP:   Section 3.4.2 (pp. 104 and ff.)
  */
+
+// This is required for M_PI to be loaded in Linux
 #define _GNU_SOURCE
+/**
+ * For Part 2:
+ *    Set to PART2 + VELOCITY || DISPLACEMENT
+ * For Part 3:
+ *    Set to PART3 + VELOCITY || DISPLACEMENT
+ * (HALF_TIME is used to check whether the derivation of velocity
+ *  from acceleration actually produces the correct value by getting the peak value).
+ */
 #define PART3
 //#define HALF_TIME
 #define DISPLACEMENT
+
 #include <stdio.h>
 #include <math.h>
 
@@ -61,11 +72,7 @@ int main(void) {
       float a, b, local_a, local_b;
       const float step_size = .01;
       float local_int_area, total_int_area;
-   #elif defined(PART3)
-      double a, b, local_a, local_b;
-      const double step_size = .001;
-      double local_int_area, total_int_area;
-   #elif defined(PART4)
+   #elif defined(PART3) || defined(PART4)
       double a, b, local_a, local_b;
       const double step_size = .001;
       double local_int_area, total_int_area;

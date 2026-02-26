@@ -7,16 +7,14 @@ CDEFS=
 CFLAGS= -g -Wall $(INCLUDE_DIRS) $(CDEFS)
 MPIFLAGS= -g -Wall -O2 $(INCLUDE_DIRS) $(CDEFS)
 
-MPIFLAGS2= -g -Wall -O2 -fopenmp $(INCLUDE_DIRS) $(CDEFS)
-
 MPIFLAGS_NOWARN= -g -O2 $(INCLUDE_DIRS) $(CDEFS)
 LIBS=
 
-PRODUCT= bubble odd_even vector_add trap mpi_many_msgs mpi_hello mpi_mat_vect_mult mpi_mat_vect_time mpi_odd_even mpi_output mpi_vector_add mpi_trap1 mpi_trap2 mpi_trap3 mpi_trap4 testex4 simple_function_mpi_trap mpi_trap3_left_riemann_ten_ms
+PRODUCT= bubble odd_even vector_add trap mpi_many_msgs mpi_hello mpi_mat_vect_mult mpi_mat_vect_time mpi_odd_even mpi_output mpi_vector_add mpi_trap1 mpi_trap2 mpi_trap3 mpi_trap4 testex4 simple_function_mpi_trap train_problem_solutions
 
 HFILES= 
-MPIFILES= mpi_many_msgs.c mpi_hello.c mpi_mat_vect_mult.c mpi_mat_vect_time.c mpi_odd_even.c mpi_output.c mpi_vector_add.c mpi_trap1.c mpi_trap2.c mpi_trap3.c mpi_trap4.c simple_function_mpi_trap.c mpi_trap3_left_riemann_ten_ms.c
-CFILES= bubble.c odd_even.c vector_add.c mpi_trap1.c mpi_trap2.c mpi_trap3.c mpi_trap4.c trap.c testex4.c simple_function_mpi_trap.c mpi_trap3_left_riemann_ten_ms.c
+MPIFILES= mpi_many_msgs.c mpi_hello.c mpi_mat_vect_mult.c mpi_mat_vect_time.c mpi_odd_even.c mpi_output.c mpi_vector_add.c mpi_trap1.c mpi_trap2.c mpi_trap3.c mpi_trap4.c simple_function_mpi_trap.c train_problem_solutions.c
+CFILES= bubble.c odd_even.c vector_add.c mpi_trap1.c mpi_trap2.c mpi_trap3.c mpi_trap4.c trap.c testex4.c simple_function_mpi_trap.c train_problem_solutions.c
 
 SRCS= ${HFILES} ${CFILES}
 OBJS= ${CFILES:.c=.o}
@@ -57,8 +55,8 @@ mpi_trap1:	mpi_trap1.c
 mpi_trap2:	mpi_trap2.c
 	$(MPICC) $(MPIFLAGS) -o $@ mpi_trap2.c $(LIB_DIRS)
 
-mpi_trap3_left_riemann_ten_ms:	mpi_trap3_left_riemann_ten_ms.c
-	$(MPICC) $(MPIFLAGS) -o $@ mpi_trap3_left_riemann_ten_ms.c $(LIB_DIRS) -lm
+train_problem_solutions:	train_problem_solutions.c
+	$(MPICC) $(MPIFLAGS) -o $@ train_problem_solutions.c $(LIB_DIRS) -lm
 
 mpi_trap3:	mpi_trap3.c
 	$(MPICC) $(MPIFLAGS) -o $@ mpi_trap3.c $(LIB_DIRS) -lm

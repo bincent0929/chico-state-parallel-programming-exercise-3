@@ -50,65 +50,30 @@ With n = 4 trapezoids, our estimate
 of the integral from 0.000000 to 100000.000000 = 1.000000000000000e+06
 ```
 
+::: {.callout-caution}
+The rest of my solutions will be available in `train_problems_solutions.c`
+
+Make sure to set the definitions to the desired outputs for the program.
+- For Part 2:
+  - Set to PART2 + VELOCITY || DISPLACEMENT
+- For Part 3:
+  - Set to PART3 + VELOCITY || DISPLACEMENT
+- For Part 4:
+  - Set to PART4 + VELOCITY || DISPLACEMENT
+- (HALF_TIME is used to check whether the derivation of velocity from acceleration actually produces the correct value by getting the peak value).
+:::
+
 ## 2.
 
-I made `mpi_trap3_left_riemann_ten_ms.c` to perform the calculations.
+### Left Riemann - 10ms Step Size - Float Numerical Values
 
-### a). Final Velocity
+#### Velocity
 
-In order to get the velocity make sure your `funct_to_integrate_float` looks like this:
-```c
-/*------------------------------------------------------------------
- * Function:    f
- * Purpose:     Compute value of function to be integrated
- * Input args:  x
- */
-float funct_to_integrate_float(float x) 
-{
-    //return sin(x);
-    return(ex3_accel_float(x));
-    //return(ex3_accel_double(x));
-    //return(ex3_vel(x));
-    //return(ex3_pos(x));
-    //return 10.0;
-}
-```
+For the velocity in the case where the step size is 10ms, make sure to set your definitions to set to PART2 + VELOCITY.
 
-And that your `LeftRiemann` looks like this:
-```c
-float LeftRiemann(
-      float left_endpt, 
-      float right_endpt, 
-      int    rect_count, 
-      float base_len) 
-{
-   float left_value, x, area=0.0; 
-   int i;
-
-   // estimate of function on left side to forward integrate
-   x = left_endpt;
-   left_value = funct_to_integrate_float(x);
-
-   for (i = 1; i <= rect_count; i++) 
-   {
-      // add area of each rectangle to overall area sum
-      area += left_value * base_len;
-
-      // advance x by base length for new values to add to area
-      x += base_len;
-      left_value = funct_to_integrate_float(x);
-   }
-
-   return area;
-
-} /*  LeftRiemann  */
-```
-
-This ensures that you're integrating the acceleration to get the velocity and that you're using float values.
-
-This was the output for getting the left Riemann derivative for the acceleration:
+This was the output that I got:
 ```bash
-$ mpiexec -n 1 ./mpi_trap3_left_riemann_ten_ms
+mpiexec -n 1 ./train_problem_solutions
 my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=180000
 my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 180000, step_size=0.010000
 After LeftRiemann: my_rank=0, integrated area =       0.0350172, step_size 0.010000, number quadratures=180000
@@ -116,25 +81,65 @@ After Reduce: with n = 180000 quadratures, our estimate
 of the integral from 0.000000 to 1800.000000 =       0.0350172
 ```
 
-As you can see, it's `0.0350172` m/s, and not `0.0` m/s that we're expecting for the stopped train. I'm assuming the float type being used is contributing to that inprecise outcome.
+As you can see, the final velocity is not zero, as we would expect. This is likely to, in large part, to the use of float values in the case of this solution.
 
-### b). Final Displacement
+#### Displacement
 
-In order to get the velocity make sure your `funct_to_integrate_float` looks like this:
-```c
-/*------------------------------------------------------------------
- * Function:    f
- * Purpose:     Compute value of function to be integrated
- * Input args:  x
- */
-float funct_to_integrate_float(float x) 
-{
-    //return sin(x);
-    //return(ex3_accel_float(x));
-    return(ex3_vel(x));
-    //return(ex3_pos(x));
-    //return 10.0;
-}
+Make sure to set your definitions to PART2 + DISPLACEMENT.
+
+```bash
+$ mpiexec -n 1 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=180000
+my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 180000, step_size=0.010000
+After LeftRiemann: my_rank=0, integrated area =  121884.0312500, step_size 0.010000, number quadratures=180000
+After Reduce: with n = 180000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =  121884.0312500
 ```
 
-This ensures that you're integrating the velocity to get the displacement. Additionally, make sure that your `LeftRiemann` looks like the one from part a of this section to ensure you're using float.
+Again, this isn't exactly the 122 km that we are expecting. Which we can again attribute, in part, to the use of float values.
+
+## 3.
+
+### Midpoint - 1ms Step Size - Double Numerical Values
+
+#### Velocity
+
+The output for the velocity using the midpoint Riemann summation at a 1ms step size and double values results in this:
+```bash
+$ mpiexec -n 1 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
+my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
+After LeftRiemann: my_rank=0, integrated area =      -0.0000000, step_size 0.001000, number quadratures=1800000
+After Reduce: with n = 1800000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =      -0.0000000
+```
+
+As you can see, we do get the `0.0` value that we are expecting. The only weird thing is that there's a minus sign in front of it. I'm not sure what's causing it.
+
+I also wanted to do a half-time check to get the peak value to make sure it's correct.
+
+So the right endpoint is 900:
+```bash
+$ mpiexec -n 1 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=900.00000000000000, number of total steps=900000
+my_rank=0, start a=0.000000, end b=900.000000, number of quadratures = 900000, step_size=0.001000
+After LeftRiemann: my_rank=0, integrated area =     135.5555556, step_size 0.001000, number quadratures=900000
+After Reduce: with n = 900000 quadratures, our estimate
+of the integral from 0.000000 to 900.000000 =     135.5555556
+```
+
+And according to our values in the spreadsheet, this is correct!
+
+#### Displacement
+
+Here's the output:
+```bash
+$ mpiexec -n 1 ./train_problem_solutions
+my_rank=0, a=0.00000000000000, b=1800.00000000000000, number of total steps=1800000
+my_rank=0, start a=0.000000, end b=1800.000000, number of quadratures = 1800000, step_size=0.001000
+After LeftRiemann: my_rank=0, integrated area =  122000.0000028, step_size 0.001000, number quadratures=1800000
+After Reduce: with n = 1800000 quadratures, our estimate
+of the integral from 0.000000 to 1800.000000 =  122000.0000028
+```
+
+As you can see, we are certainly very close to the 122km that we are expecting. Only very slightly off. Which closer than when using floats with the left riemann sum.
