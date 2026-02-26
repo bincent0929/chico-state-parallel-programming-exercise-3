@@ -73,12 +73,10 @@ user    0m0.052s
 sys     0m0.080s
 ```
 
-I have 8 cores to be able to work on this, but due to the way this is set up, using 5 cores correctly divides the work across the cores to not cause remainder issues which results in incorrect calculations. It also isn't much faster because the amount of work isn't large enough to see a significant speed up with extra processes.
-
 ::: {.callout-note}
-As you can see from the above, the MPI implementation using multiple processes doesn't really yield a speedup compared to the single process.
+- I have 8 cores to be able to work on this, but due to the way this is set up, using 5 cores correctly divides the wxork across the cores to not cause remainder issues which results in incorrect calculations. 
 
-This could be relative to the problem. It is similarly lack luster in speed up for all the rest of the programs using MPI in this report.
+- It also isn't much faster because the amount of work isn't large enough to see a significant speed up with extra processes.
 :::
 
 ## 2.
@@ -86,7 +84,7 @@ This could be relative to the problem. It is similarly lack luster in speed up f
 ::: {.callout-caution}
 The rest of my solutions will be available in `train_problems_solutions.c`
 
-- Make sure to set the definitions to the desired outputs for the program:
+- Make sure to set the definitions at the top of the file to the desired outputs for the program:
     - For Part 2:
       - Set to PART2 + VELOCITY || DISPLACEMENT
     - For Part 3:
@@ -104,7 +102,7 @@ I had to make the step size smaller to produce a noticeable difference between t
 
 #### Velocity
 
-For the velocity in the case where the step size is 10ms, make sure to set your definitions to set to PART2 + VELOCITY.
+For the velocity in the case where the step size is .00001, make sure to set your definitions to set to PART2 + VELOCITY.
 
 This was the output that I got when using one process:
 ```bash
@@ -120,7 +118,7 @@ user    0m0.854s
 sys     0m0.028s
 ```
 
-As you can see, the final velocity is not zero, as we would expect. This is likely to, in large part, to the use of float values in the case of this solution.
+The result is eery far off from the 0.0. that we're expecting here. It seems that the error coming from using float values and the left Riemann method of summation is procuding very significant error.
 
 This was the output I got when using multiple processes:
 ```bash
@@ -150,7 +148,7 @@ user    0m1.323s
 sys     0m0.210s
 ```
 
-The outcome is slightly different. Still very close to the 0.0 we're expecting. It is close, in terms of absolute value than using just the single worker. Which is interesting.
+This is better, but still very significantly far off.
 
 #### Displacement
 
@@ -170,7 +168,7 @@ user    0m1.770s
 sys     0m0.028s
 ```
 
-Again, this isn't exactly the 122 km that we are expecting. Which we can again attribute, in part, to the use of float values.
+This is hilariously far off from our expected 122 km. Like, A LOT.
 
 Here it is for multiple processes:
 ```bash
@@ -200,7 +198,7 @@ user    0m2.659s
 sys     0m0.355s
 ```
 
-Looks like this time, the multiple process result is a little farther off than the single process result.
+This is certainly better. But still very far off.
 
 ## 3.
 
@@ -222,7 +220,7 @@ user    0m1.844s
 sys     0m0.029s
 ```
 
-Well, it looks like we're just a little ways below the zero we're expecting for the stopped train. But it's definitely better from what we got in part 2 using float and the smaller step size.
+This is definitely MUCH better than the results from part 2.
 
 I also wanted to do a half-time check to get the peak value to make sure it's correct.
 
@@ -298,7 +296,7 @@ user    0m1.450s
 sys     0m0.309s
 ```
 
-Which come out to right about the same values as with the single process.
+These are also much closer than the results from part 2 to 0.0.
 
 #### Displacement
 
@@ -316,7 +314,7 @@ user    0m1.932s
 sys     0m0.026s
 ```
 
-As you can see, we are certainly very close to the 122km that we are expecting. Only very slightly off. Which closer than when using floats with the left riemann sum.
+This is WAY better than what we got from part 2. The use of double and the midpoint method (probably more-so the use of doubles) makes this a much better result.
 
 Here's the output from multiple processes:
 ```bash
@@ -396,7 +394,7 @@ user    0m2.592s
 sys     0m0.313s
 ```
 
-These come out to being closer in absolute value to 0 than with the midpoint results in part 2.
+As you can see from both of these, the results are much closer to 0.0 than both of the past parts.
 
 #### Displacement
 
@@ -442,4 +440,5 @@ user    0m2.536s
 sys     0m0.210s
 ```
 
-Like for the velocity, both come out to be closer to 122 km than with the midpoint method in part 3.
+Similarly for velocity, this is closer than for the past couple parts.
+

@@ -35,7 +35,7 @@
  * (HALF_TIME is used to check whether the derivation of velocity
  *  from acceleration actually produces the correct value by getting the peak value).
  */
-#define PART4
+#define PART2
 //#define HALF_TIME
 //#define VELOCITY
 #define DISPLACEMENT
